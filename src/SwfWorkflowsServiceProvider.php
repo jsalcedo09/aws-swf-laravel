@@ -3,7 +3,9 @@
 namespace Jsalcedo09\SwfWorkflows;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\AliasLoader;
 use Jsalcedo09\SwfWorkflows\Commands\DeciderCommand;
+
 
 class SwfWorkflowsServiceProvider extends ServiceProvider
 {
@@ -40,11 +42,8 @@ class SwfWorkflowsServiceProvider extends ServiceProvider
             __DIR__.'/config/swfworkflows.php', 'swfworkflows'
         );
 
-        $this->app->register(
-            'Aws\Laravel\AwsServiceProvider'
-        );
+        $this->app->register('Aws\Laravel\AwsServiceProvider');
 
-        $loader = \Illuminate\Foundation\AliasLoader::getInstance();
-        $loader->alias('AWS', 'Aws\Laravel\AwsFacade');
+        AliasLoader::getInstance()->alias('AWS', 'Aws\Laravel\sAwsFacade');
     }
 }
