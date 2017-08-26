@@ -1,5 +1,6 @@
 {
     "name": "jsalcedo09/aws-swf-laravel",
+    "version":"1.0.0",
     "description": "Laravel 5 package to integrate with Amazon Simplified Workflows Service",
     "minimum-stability": "dev",
     "require": {
