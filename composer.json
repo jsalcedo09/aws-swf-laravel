@@ -1,0 +1,21 @@
+{
+    "name": "jsalcedo09/aws-swf-laravel",
+    "description": "Laravel 5 package to integrate with Amazon Simplified Workflows Service",
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.5.9",
+        "aws/aws-sdk-php": "^3.34"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Jsalcedo09\\SwfWorkflows\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jorge Salcedo",
+            "email": "jorge.salcedo2421@gmail.com"
+        }
+    ]
+}
