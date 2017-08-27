@@ -18,15 +18,13 @@ class SwfWorkflowsServiceProvider extends ServiceProvider
     {
         //
         $this->publishes([
-            __DIR__.'/config/swfworkflows.php' => config_path('swfworkflows.php'),
+            __DIR__.'/../config/swfworkflows.php' => config_path('swfworkflows.php'),
         ]);
-
-        //If required migration uncomment
-        //$this->loadMigrationsFrom(__DIR__.'/migrations');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 DeciderCommand::class,
+                RegisterCommand::class
             ]);
         }
     }
@@ -39,11 +37,10 @@ class SwfWorkflowsServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__.'/config/swfworkflows.php', 'swfworkflows'
+            __DIR__.'/../config/swfworkflows.php', 'swfworkflows'
         );
 
         $this->app->register('Aws\Laravel\AwsServiceProvider');
-
-        AliasLoader::getInstance()->alias('AWS', 'Aws\Laravel\sAwsFacade');
+        AliasLoader::getInstance()->alias('AWS', 'Aws\Laravel\AwsFacade');
     }
 }
