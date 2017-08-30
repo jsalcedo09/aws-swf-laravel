@@ -37,6 +37,7 @@
 
 
 return [
+    'workflowExecutionRetentionPeriodInDays'=>"90",
     'activities'=>[
 
     ],

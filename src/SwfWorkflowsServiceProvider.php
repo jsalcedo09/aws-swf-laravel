@@ -5,6 +5,8 @@ namespace Jsalcedo09\SwfWorkflows;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Foundation\AliasLoader;
 use Jsalcedo09\SwfWorkflows\Commands\DeciderCommand;
+use Jsalcedo09\SwfWorkflows\Commands\RegisterCommand;
+
 
 
 class SwfWorkflowsServiceProvider extends ServiceProvider
