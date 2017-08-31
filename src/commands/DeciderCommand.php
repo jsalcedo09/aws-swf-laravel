@@ -100,7 +100,8 @@ class DeciderCommand extends Command
             'maximumPageSize' => $this->maximumPageSize,
             'taskList'=>[
                 "name" => $this->argument('taskList')
-            ]
+            ],
+            "reverseOrder" => true
         ];
 
         if(!empty($pageToken))
