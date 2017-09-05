@@ -3,17 +3,21 @@ A Laravel 5 package to integrate with Amazon Simplified Workflows Service
 
 ## Installation
 1. Add respository in composer.json
+```sh
 "repositories": [
     {
         "type": "vcs",
         "url": "https://github.com/jsalcedo09/aws-swf-laravel"
     }
 ]
+```
 
 2. Add as dependency in require block
+```sh
 "require": {
     "jsalcedo09/aws-swf-laravel": "dev-master"
 }
+```
 
 ## Commands
 
