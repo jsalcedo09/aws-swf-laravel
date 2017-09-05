@@ -41,6 +41,7 @@ class DeciderCommand extends Command
         parent::__construct();
         $this->swfclient = AWS::createClient('Swf');
         $this->config = config("swfworkflows");
+        $this->activityworkflow = config("activityworkflow");
     }
 
     /**
@@ -51,6 +52,11 @@ class DeciderCommand extends Command
     public function handle()
     {
         $domainArg = $this->argument('domain');
+        // Check if activityworkflow config is there
+        if(!isset($this->activityworkflow['workflows']) || count($this->activityworkflow['workflows']) == 0) {
+            $this->warn("activityworkflow missing");
+            exit;
+        }
         foreach($this->config["workflows"] as $workflow){
             if($domainArg === $workflow['domain']){
                 $stack[] =  $this->runWorkflowDecider($domainArg);
@@ -67,13 +73,13 @@ class DeciderCommand extends Command
         $this->info("Starting decider in domain '".$domain."'");
         do {
             $task = $this->pollForDecisionTasks($domain);
-            $this->processTask($task);
+            $this->giveTask($domain, $task);
         } while (1);
     }
 
     private function pollForDecisionTasks($domain){
         $pageToken = "";
-        $task = [];
+        $task = ["events"=>[]];
         do{
             $result = $this->pollForDecisionTasksPage($domain, $pageToken);
             foreach ($result as $key => $value){
@@ -101,7 +107,7 @@ class DeciderCommand extends Command
             'taskList'=>[
                 "name" => $this->argument('taskList')
             ],
-            "reverseOrder" => true
+            'reverseOrder' => false
         ];
 
         if(!empty($pageToken))
@@ -111,9 +117,14 @@ class DeciderCommand extends Command
 
     }
 
-    private function processTask($task){
-        $this->info("Got new decision task");
-        $deciderTask = new DeciderTask($task);
-        event($deciderTask->getEventName(), $deciderTask);
+    private function giveTask($domain, $task){
+        if(key_exists('taskToken', $task)){
+            $deciderTask = new DeciderTask($domain, $task);
+            $this->info("Got new decider task for workflow ".$task['workflowType']['name']." Processing....");
+            $deciderTask->processTask();
+            //event($deciderTask->getEventName(), $deciderTask);
+        }else{
+            $this->info("No task in the last 60 second... waiting");
+        }
     }
 }

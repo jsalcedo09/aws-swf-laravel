@@ -5,6 +5,7 @@ namespace Jsalcedo09\SwfWorkflows;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Foundation\AliasLoader;
 use Jsalcedo09\SwfWorkflows\Commands\DeciderCommand;
+use Jsalcedo09\SwfWorkflows\Commands\ActivityCommand;
 use Jsalcedo09\SwfWorkflows\Commands\RegisterCommand;
 
 
@@ -21,12 +22,14 @@ class SwfWorkflowsServiceProvider extends ServiceProvider
         //
         $this->publishes([
             __DIR__.'/../config/swfworkflows.php' => config_path('swfworkflows.php'),
+            __DIR__.'/../config/activityworkflow.php' => config_path('activityworkflow.php'),
         ]);
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 DeciderCommand::class,
-                RegisterCommand::class
+                ActivityCommand::class,
+                RegisterCommand::class,
             ]);
         }
     }
