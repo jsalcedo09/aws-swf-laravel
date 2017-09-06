@@ -55,10 +55,14 @@ class ActivityTask {
      * @param type $taskResult
      */
     public function finishActivityTask($taskResult) {
-        $this->swfclient->respondActivityTaskCompleted([
-            'result' => isset($taskResult['result']) ? $taskResult['result'] : '',
-            'taskToken' => $this->getActivityToken()
-        ]);
+        try {
+            $this->swfclient->respondActivityTaskCompleted([
+                'result' => isset($taskResult['result']) ? $taskResult['result'] : '',
+                'taskToken' => $this->getActivityToken()
+            ]);
+        } catch (\Exception $e) {
+            echo 'Error while finish activity - '.$e->getMessage();
+        }
     }
     
     /**
@@ -66,18 +70,26 @@ class ActivityTask {
      * @param type $reason
      */
     public function failActivityTask($reason) {
-        $this->swfclient->respondActivityTaskFailed([
-            'reason' => isset($reason['reason']) ? $reason['reason'] : '',
-            'taskToken' => $this->getActivityToken()
-        ]);
+        try {
+            $this->swfclient->respondActivityTaskFailed([
+                'reason' => isset($reason['reason']) ? $reason['reason'] : '',
+                'taskToken' => $this->getActivityToken()
+            ]);
+        } catch (\Exception $e) {
+            echo 'Error while failing activity - '.$e->getMessage();
+        }
     }
     
     /**
      * Record activity heartbeat
      */
     public function recordActivityTaskHeartbeat() {
-        $this->swfclient->recordActivityTaskHeartbeat([
-            'taskToken' => $this->getActivityToken()
-        ]);
+        try {
+            $this->swfclient->recordActivityTaskHeartbeat([
+                'taskToken' => $this->getActivityToken()
+            ]);
+        } catch (\Exception $e) {
+            echo 'Error while reporting healthbeat - '.$e->getMessage();
+        }
     }
 }

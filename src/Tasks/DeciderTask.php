@@ -89,47 +89,51 @@ class DeciderTask {
      * @param type $taskData
      */
     public function ScheduleActivityTask($taskData) {
-        $this->swfclient->respondDecisionTaskCompleted(
-                ['decisions' => [
-                        [
-                            "scheduleActivityTaskDecisionAttributes" => [
-                                'activityId' => $taskData['id'], // REQUIRED
-                                'activityType' => [ // REQUIRED
-                                    'name' => $taskData['name'], // REQUIRED
-                                    'version' => $taskData['version'], // REQUIRED
+        try {
+            $this->swfclient->respondDecisionTaskCompleted(
+                    ['decisions' => [
+                            [
+                                "scheduleActivityTaskDecisionAttributes" => [
+                                    'activityId' => $taskData['id'], // REQUIRED
+                                    'activityType' => [ // REQUIRED
+                                        'name' => $taskData['name'], // REQUIRED
+                                        'version' => $taskData['version'], // REQUIRED
+                                    ],
+                                    'control' => isset($taskData['control']) ? $taskData['control'] : '',
+                                    'input' => $taskData['input'],
+                                    'taskList' => [
+                                        'name' => 'default', // REQUIRED
+                                    ]
                                 ],
-                                'control' => isset($taskData['control']) ? $taskData['control'] : '',
-                                'heartbeatTimeout' => '500',
-                                'input' => $taskData['input'],
-                                'scheduleToCloseTimeout' => '10000',
-                                'scheduleToStartTimeout' => '10000',
-                                'startToCloseTimeout' => '10000',
-                                'taskList' => [
-                                    'name' => 'default', // REQUIRED
-                                ]
-                            ],
-                            "decisionType" => 'ScheduleActivityTask',
-                        ]
-                    ],
-                    "taskToken" => $this->getTask()['taskToken']
-        ]);
+                                "decisionType" => 'ScheduleActivityTask',
+                            ]
+                        ],
+                        "taskToken" => $this->getTask()['taskToken']
+            ]);
+        } catch (\Exception $e) {
+            echo 'Error while scheduling activity task - '.$e->getMessage();
+        }
     }
 
     public function SignalExternalWorkflowExecution($taskData) {
-        $this->swfclient->respondDecisionTaskCompleted(
-                ['decisions' => [
-                        [
-                            "signalExternalWorkflowExecutionDecisionAttributes" => [
-                                'control' => isset($taskData['control']) ? $taskData['control'] : '',
-                                'input' => $taskData['input'],
-                                'signalName' => 'Test',
-                                'workflowId' => $this->task['workflowExecution']['workflowId']
-                            ],
-                            "decisionType" => 'SignalExternalWorkflowExecution',
-                        ]
-                    ],
-                    "taskToken" => $this->getTask()['taskToken']
-        ]);
+        try {
+            $this->swfclient->respondDecisionTaskCompleted(
+                    ['decisions' => [
+                            [
+                                "signalExternalWorkflowExecutionDecisionAttributes" => [
+                                    'control' => isset($taskData['control']) ? $taskData['control'] : '',
+                                    'input' => $taskData['input'],
+                                    'signalName' => 'Test',
+                                    'workflowId' => $this->task['workflowExecution']['workflowId']
+                                ],
+                                "decisionType" => 'SignalExternalWorkflowExecution',
+                            ]
+                        ],
+                        "taskToken" => $this->getTask()['taskToken']
+            ]);
+        } catch (\Exception $e) {
+            echo 'Error while signal workflow - '.$e->getMessage();
+        }
     }
 
     /**
@@ -137,13 +141,17 @@ class DeciderTask {
      * @param type $taskData
      */
     public function terminateWorkFlow($taskData) {
-        $this->swfclient->terminateWorkflowExecution([
-            'childPolicy' => 'TERMINATE',
-            'domain' => $this->domain, // REQUIRED
-            'reason' => isset($taskData['reason']) ? $taskData['reason'] : 'Successfully finished',
-            'runId' => $this->task['workflowExecution']['runId'],
-            'workflowId' => $this->task['workflowExecution']['workflowId'], // REQUIRED
-        ]);
+        try {
+            $this->swfclient->terminateWorkflowExecution([
+                'childPolicy' => 'TERMINATE',
+                'domain' => $this->domain, // REQUIRED
+                'reason' => isset($taskData['reason']) ? $taskData['reason'] : 'Successfully finished',
+                'runId' => $this->task['workflowExecution']['runId'],
+                'workflowId' => $this->task['workflowExecution']['workflowId'], // REQUIRED
+            ]);
+        } catch (\Exception $e) {
+            echo 'Error while terminating workflow - '.$e->getMessage();
+        }
     }
 
     /**
@@ -202,12 +210,13 @@ class DeciderTask {
     protected function findPreviousTask() {
         $eventData = ['name' => 'start'];
         foreach (array_reverse($this->task['events']) as $event) {
+            // If schdeule activity task failed
             if ($event['eventType'] == 'ScheduleActivityTaskFailed') {
                 $eventData['name'] = 'finish';
                 $eventData['reason'] = $event['scheduleActivityTaskFailedEventAttributes']['cause'];
                 return $eventData;
             }
-
+            
             if ($event['eventType'] == 'ActivityTaskCompleted') {
                 $eventData['result'] = $event['activityTaskCompletedEventAttributes']['result'];
                 $eventData['complete'] = true;
@@ -271,6 +280,12 @@ class DeciderTask {
             if (in_array($event['eventType'], ['ActivityTaskFailed'])) {
                 return ['status' => true,
                     'reason' => $event[lcfirst($event['eventType']) . 'EventAttributes']['reason']
+                ];
+            }
+            
+            if (in_array($event['eventType'], ['ActivityTaskTimedOut'])) {
+                return ['status' => true,
+                    'reason' => 'Activity task timeout'
                 ];
             }
 
