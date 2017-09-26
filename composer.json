@@ -9,6 +9,9 @@
     },
     "license": "MIT",
     "autoload": {
+        "classmap": [
+            "src/commands"
+        ],
         "psr-4": {
             "Jsalcedo09\\SwfWorkflows\\": "src/"
         }
