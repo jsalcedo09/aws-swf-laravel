@@ -45,6 +45,8 @@ class ActivityCommand extends Command {
      */
     public function handle() {
         $domainArg = $this->argument('domain');
+        print_r($domainArg);
+        print_r($this->config["workflows"]);
         foreach ($this->config["workflows"] as $workflow) {
             if ($domainArg === $workflow['domain']) {
                 $stack[] = $this->runWorkflowActivity($domainArg);
