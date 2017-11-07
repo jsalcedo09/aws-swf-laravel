@@ -50,6 +50,10 @@ class ActivityTask {
         return $this->activity['taskToken'];
     }
     
+    public function getActivityInput() {
+        return $this->activity['input'];
+    }
+    
     /**
      * Finish activity task
      * @param type $taskResult
