@@ -184,11 +184,14 @@ class DeciderTask {
         }
         $previousTaskAttributes = $this->findPreviousTask();
         if (isset($previousTaskAttributes['complete']) && $previousTaskAttributes['complete']) {
+            $taskName = $this->findNextTaskFromCondition($workflows[$workflowName][$previousTaskAttributes['name']],$previousTaskAttributes);
             $nextTaskData['name'] = $workflows[$workflowName][$previousTaskAttributes['name']];
             $nextTaskData['input'] = $previousTaskAttributes['result'];
         }
         if ($previousTaskAttributes['name'] == 'start') {
-            $nextTaskData['name'] = $workflows[$workflowName][$previousTaskAttributes['name']];
+            $taskName = $this->findNextTaskFromCondition($workflows[$workflowName][$previousTaskAttributes['name']],$previousTaskAttributes);
+            $nextTaskData['name'] = $taskName;
+            $nextTaskData['input'] = $previousTaskAttributes['result'];
         }
         return $nextTaskData;
     }
@@ -207,7 +210,7 @@ class DeciderTask {
      * Check previous task
      * @return type
      */
-    protected function findPreviousTask() {
+    public function findPreviousTask() {
         $eventData = ['name' => 'start'];
         foreach (array_reverse($this->task['events']) as $event) {
             // If schdeule activity task failed
@@ -225,6 +228,12 @@ class DeciderTask {
             if ($event['eventType'] == 'ActivityTaskScheduled') {
                 $eventData['name'] = $event['activityTaskScheduledEventAttributes']['activityType']['name'];
                 $eventData['version'] = $event['activityTaskScheduledEventAttributes']['activityType']['version'];
+                return $eventData;
+            }
+            
+            if ($event['eventType'] == 'WorkflowExecutionStarted') {
+                $eventData['result'] = isset($event['workflowExecutionStartedEventAttributes']['input']) ? $event['workflowExecutionStartedEventAttributes']['input'] : '';
+                $eventData['name'] = 'start';
                 return $eventData;
             }
         }
@@ -332,6 +341,29 @@ class DeciderTask {
         }
     }
     
+    protected function findNextTaskFromCondition($data, $previousTaskAttributes) {
+        if(is_array($data)) {
+            if(!isset($previousTaskAttributes['result'])) {
+                $taskName = $data[0];
+            }
+            $nextTaskData = $data;
+            // check for each input
+            array_shift($nextTaskData);
+            foreach ($nextTaskData as $input=>$nextTask) {
+                if(property_exists(json_decode($previousTaskAttributes['result']), $input)) {
+                    $taskName = $nextTask;
+                    break;
+                }
+            }
+            if(!isset($taskName)) {
+                $taskName = $data[0];
+            }
+            return $taskName;
+        } else {
+            return $data;
+        }
+    }
+
     public function setTermination($reason = '') {
         $this->terminate = true;
         $this->terminateReason = $reason;
