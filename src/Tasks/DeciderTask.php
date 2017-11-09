@@ -185,7 +185,7 @@ class DeciderTask {
         $previousTaskAttributes = $this->findPreviousTask();
         if (isset($previousTaskAttributes['complete']) && $previousTaskAttributes['complete']) {
             $taskName = $this->findNextTaskFromCondition($workflows[$workflowName][$previousTaskAttributes['name']],$previousTaskAttributes);
-            $nextTaskData['name'] = $workflows[$workflowName][$previousTaskAttributes['name']];
+            $nextTaskData['name'] = $taskName;
             $nextTaskData['input'] = $previousTaskAttributes['result'];
         }
         if ($previousTaskAttributes['name'] == 'start') {
@@ -350,7 +350,7 @@ class DeciderTask {
             // check for each input
             array_shift($nextTaskData);
             foreach ($nextTaskData as $input=>$nextTask) {
-                if(property_exists(json_decode($previousTaskAttributes['result']), $input)) {
+                if(isset($previousTaskAttributes['result']) && $previousTaskAttributes['result'] !== '' && property_exists(json_decode($previousTaskAttributes['result']), $input)) {
                     $taskName = $nextTask;
                     break;
                 }
