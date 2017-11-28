@@ -83,7 +83,44 @@ class DeciderTask {
             Event::fire($this->getEventName($e['eventType']), $eventParams);
         }
     }
+    
+     /**
+     * Schedule activity child task
+     * @param type $taskData
+     */
+    
+     public function ScheduleChildWorkflow($taskData) {
+        $childDataInput = json_decode($taskData['input'], true);
+        $childData = [];
+        foreach ($childDataInput['childWorkFlowData'] as $value) {
+            $childData[] = [
+                "startChildWorkflowExecutionDecisionAttributes" => [
+                    'input' => isset(json_encode($value,true)) ? json_encode($value,true) : '',
+                    'workflowId' => isset($value['workflowId']) ? $value['workflowId'] : '',
+                    'workflowType' => [// REQUIRED
+                        'name' => isset($childDataInput['workflowType']) ? $childDataInput['workflowType'] : '', // REQUIRED
+                        'version' => $taskData['version'], // REQUIRED
+                    ],
+                    'taskList' => [
+                        'name' => 'default', // REQUIRED
+                    ],
+                    'executionStartToCloseTimeout' => '32333',
+                    'taskStartToCloseTimeout' => '32333'
+                ],
+                "decisionType" => 'StartChildWorkflowExecution'
+            ];
+        }
 
+        try {
+            $this->swfclient->respondDecisionTaskCompleted(
+                    ['decisions' => isset($childData) ? $childData : '',
+                     "taskToken" => $this->getTask()['taskToken']
+            ]);
+        } catch (\Exception $e) {
+            echo 'Error while scheduling activity task - ' . $e->getMessage();
+        }
+    }
+    
     /**
      * Schedule activity task
      * @param type $taskData
