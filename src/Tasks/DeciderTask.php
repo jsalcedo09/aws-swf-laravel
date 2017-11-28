@@ -95,10 +95,10 @@ class DeciderTask {
         foreach ($childDataInput['childWorkFlowData'] as $value) {
             $childData[] = [
                 "startChildWorkflowExecutionDecisionAttributes" => [
-                    'input' => isset(json_encode($value,true)) ? json_encode($value,true) : '',
-                    'workflowId' => isset($value['workflowId']) ? $value['workflowId'] : '',
+                    'input' => json_encode($value,true),
+                    'workflowId' => $value['workflowId'],
                     'workflowType' => [// REQUIRED
-                        'name' => isset($childDataInput['workflowType']) ? $childDataInput['workflowType'] : '', // REQUIRED
+                        'name' => $childDataInput['workflowType'], // REQUIRED
                         'version' => $taskData['version'], // REQUIRED
                     ],
                     'taskList' => [
@@ -110,10 +110,10 @@ class DeciderTask {
                 "decisionType" => 'StartChildWorkflowExecution'
             ];
         }
-
+        
         try {
             $this->swfclient->respondDecisionTaskCompleted(
-                    ['decisions' => isset($childData) ? $childData : '',
+                    ['decisions' => $childData,
                      "taskToken" => $this->getTask()['taskToken']
             ]);
         } catch (\Exception $e) {
