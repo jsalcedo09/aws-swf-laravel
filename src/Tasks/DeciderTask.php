@@ -22,7 +22,7 @@ class DeciderTask {
     protected $terminate = false;
     protected $terminateReason;
 
-    const SWF_EVENTS = ['WorkflowExecutionStarted', 'WorkflowExecutionCompleted', 'CompleteWorkflowExecutionFailed', 'WorkflowExecutionFailed', 'DecisionTaskScheduled', 'DecisionTaskStarted', 'DecisionTaskCompleted', 'ActivityTaskScheduled', 'ActivityTaskStarted', 'ActivityTaskCompleted', 'ActivityTaskFailed', 'WorkflowExecutionSignaled', 'SignalExternalWorkflowExecutionInitiated', 'ExternalWorkflowExecutionSignaled', 'ScheduleActivityTaskFailed'];
+    const SWF_EVENTS = ['WorkflowExecutionStarted', 'WorkflowExecutionCompleted', 'CompleteWorkflowExecutionFailed', 'WorkflowExecutionFailed', 'DecisionTaskScheduled', 'DecisionTaskStarted', 'DecisionTaskCompleted', 'ActivityTaskScheduled', 'ActivityTaskStarted', 'ActivityTaskCompleted', 'ActivityTaskFailed', 'WorkflowExecutionSignaled', 'SignalExternalWorkflowExecutionInitiated', 'ExternalWorkflowExecutionSignaled', 'ScheduleActivityTaskFailed', 'ChildWorkflowExecutionStarted','ChildWorkflowExecutionTerminated'];
 
     public $wokflowStat = [];
 
@@ -230,9 +230,26 @@ class DeciderTask {
             $nextTaskData['name'] = $taskName;
             $nextTaskData['input'] = $previousTaskAttributes['result'];
         }
+        if ($previousTaskAttributes['name'] == 'wait') {
+            $nextTaskData['name'] = 'ChildWait';
+            $nextTaskData['input'] = '';
+        }
         return $nextTaskData;
     }
 
+    /**
+     * Check if it's child workflow or not
+     * @param type $workflowname
+     * @return boolean
+     */
+    public function isChildWorkflow($workflowname) {
+        $childWorkflows = \Config::get('activityworkflow.childWorkflows');
+        if(is_array($childWorkflows) && in_array($workflowname, $childWorkflows)) {
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Filter out new events only
      * @param type $allEvents
@@ -265,6 +282,12 @@ class DeciderTask {
             if ($event['eventType'] == 'ActivityTaskScheduled') {
                 $eventData['name'] = $event['activityTaskScheduledEventAttributes']['activityType']['name'];
                 $eventData['version'] = $event['activityTaskScheduledEventAttributes']['activityType']['version'];
+                return $eventData;
+            }
+            
+            if ($event['eventType'] == 'ChildWorkflowExecutionStarted') {
+                $eventData['result'] = isset($event['childWorkflowExecutionStartedEventAttributes']['input']) ? $event['childWorkflowExecutionStartedEventAttributes']['input'] : '';
+                $eventData['name'] = 'wait';
                 return $eventData;
             }
             
