@@ -116,6 +116,30 @@ return [
 ];
 ```
 
+- Child workflow scenario
+```sh
+return [
+    'workflows' => [
+        'TestWorkflowWithDecider' => [
+            'start'=>'Activity1',
+            'Activity1'=>'startChildWorkflow',
+            'ChildWait'=>['ChildWait','finish'=>'Activity2'],
+            'Activity2'=>'finish'
+        ],
+        'ChildTestWorkflowWithDecider' => [
+            'start'=>'Activity1',
+            'Activity1'=>'Activity2',
+            'Activity2'=>'finish'
+        ]
+    ],
+    'childWorkflows' => [
+        'GenerateBannerWorkflowTest'
+    ]
+];
+```
+
+**Note : To be identify the child workflow name it's necessary to input it in ['childWorkFlowData']['workflowType']
+
 ## Decider event structure
 
 - <domain>.<workflow_name>.decider.<event_type>
