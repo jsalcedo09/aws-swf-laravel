@@ -230,8 +230,14 @@ class DeciderTask {
             $nextTaskData['name'] = $taskName;
             $nextTaskData['input'] = $previousTaskAttributes['result'];
         }
+        // Childwait
         if ($previousTaskAttributes['name'] == 'wait') {
             $nextTaskData['name'] = 'ChildWait';
+            $nextTaskData['input'] = '';
+        }
+        // skip
+        if ($previousTaskAttributes['name'] == 'skip') {
+            $nextTaskData['name'] = 'skip';
             $nextTaskData['input'] = '';
         }
         return $nextTaskData;
@@ -275,14 +281,22 @@ class DeciderTask {
             }
             
             if ($event['eventType'] == 'ActivityTaskCompleted') {
+                $eventData['activity'] = true;
                 $eventData['result'] = $event['activityTaskCompletedEventAttributes']['result'];
                 $eventData['complete'] = true;
             }
 
             if ($event['eventType'] == 'ActivityTaskScheduled') {
-                $eventData['name'] = $event['activityTaskScheduledEventAttributes']['activityType']['name'];
-                $eventData['version'] = $event['activityTaskScheduledEventAttributes']['activityType']['version'];
-                return $eventData;
+                // If eventType ActivityTaskCompleted comes first
+                if(isset($eventData['activity']) && $eventData['activity']) {
+                    $eventData['name'] = $event['activityTaskScheduledEventAttributes']['activityType']['name'];
+                    $eventData['version'] = $event['activityTaskScheduledEventAttributes']['activityType']['version'];
+                    unset($eventData['activity']);
+                    return $eventData;
+                } else {
+                    // skip if ActivityTaskCompleted not came
+                    $eventData['name'] = 'skip';
+                }
             }
             
             if ($event['eventType'] == 'ChildWorkflowExecutionStarted') {
