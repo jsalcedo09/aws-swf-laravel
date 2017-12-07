@@ -281,9 +281,15 @@ class DeciderTask {
             }
             
             if ($event['eventType'] == 'ActivityTaskCompleted') {
-                $eventData['activity'] = true;
-                $eventData['result'] = $event['activityTaskCompletedEventAttributes']['result'];
-                $eventData['complete'] = true;
+				if(isset($eventData['is_child']) && $eventData['is_child']) {
+					$eventData['result'] = $event['activityTaskCompletedEventAttributes']['result'];
+					unset($eventData['is_child']);
+					return $eventData;
+			    } else {
+					$eventData['activity'] = true;
+					$eventData['result'] = $event['activityTaskCompletedEventAttributes']['result'];
+					$eventData['complete'] = true;
+				}
             }
 
             if ($event['eventType'] == 'ActivityTaskScheduled') {
@@ -301,13 +307,14 @@ class DeciderTask {
             
             if ($event['eventType'] == 'ChildWorkflowExecutionStarted') {
                 $eventData['name'] = 'wait';
+                $eventData['is_child'] = true;
             }
             
-            if ($event['eventType'] == 'StartChildWorkflowExecutionInitiated') {
-                $eventData['result'] = isset($event['startChildWorkflowExecutionInitiatedEventAttributes']['input']) ? $event['startChildWorkflowExecutionInitiatedEventAttributes']['input'] : '';
-                $eventData['name'] = 'wait';
-                return $eventData;
-            }
+            //if ($event['eventType'] == 'StartChildWorkflowExecutionInitiated') {
+            //    $eventData['result'] = isset($event['startChildWorkflowExecutionInitiatedEventAttributes']['input']) ? $event['startChildWorkflowExecutionInitiatedEventAttributes']['input'] : '';
+            //    $eventData['name'] = 'wait';
+            //    return $eventData;
+            //}
             
             if ($event['eventType'] == 'WorkflowExecutionStarted') {
                 $eventData['result'] = isset($event['workflowExecutionStartedEventAttributes']['input']) ? $event['workflowExecutionStartedEventAttributes']['input'] : '';
