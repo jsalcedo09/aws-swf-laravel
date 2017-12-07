@@ -233,7 +233,7 @@ class DeciderTask {
         // Childwait
         if ($previousTaskAttributes['name'] == 'wait') {
             $nextTaskData['name'] = 'ChildWait';
-            $nextTaskData['input'] = '';
+            $nextTaskData['input'] = $previousTaskAttributes['result'];
         }
         // skip
         if ($previousTaskAttributes['name'] == 'skip') {
@@ -300,7 +300,11 @@ class DeciderTask {
             }
             
             if ($event['eventType'] == 'ChildWorkflowExecutionStarted') {
-                $eventData['result'] = isset($event['childWorkflowExecutionStartedEventAttributes']['input']) ? $event['childWorkflowExecutionStartedEventAttributes']['input'] : '';
+                $eventData['name'] = 'wait';
+            }
+            
+            if ($event['eventType'] == 'StartChildWorkflowExecutionInitiated') {
+                $eventData['result'] = isset($event['startChildWorkflowExecutionInitiatedEventAttributes']['input']) ? $event['startChildWorkflowExecutionInitiatedEventAttributes']['input'] : '';
                 $eventData['name'] = 'wait';
                 return $eventData;
             }
