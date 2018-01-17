@@ -19,6 +19,15 @@ A Laravel 5 package to integrate with Amazon Simplified Workflows Service
 }
 ```
 
+3. On the  `app/app.php` add
+
+```php
+'providers' => [
+...
+    Jsalcedo09\SwfWorkflows\SwfWorkflowsServiceProvider::class
+]
+```
+
 ## Commands
 
 - Copy configuration files
