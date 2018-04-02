@@ -82,6 +82,9 @@ class DeciderCommand extends Command
         $task = ["events"=>[]];
         do{
             $result = $this->pollForDecisionTasksPage($domain, $pageToken);
+            if(!isset($result['pageToken'])) {
+                $pageToken = "";
+            }
             foreach ($result as $key => $value){
                 switch ($key){
                     case "nextPageToken":
